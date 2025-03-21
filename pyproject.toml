@@ -1,0 +1,25 @@
+[project]
+name = "konnichiwa"
+version = "0.1.0"
+description = "A simple API service for a senior DevOps engineer take-home exercise."
+readme = "README.md"
+requires-python = "==3.13.2"
+
+dependencies = [
+    "fastapi (==0.115.11)",
+    "uvicorn (==0.34.0)",
+    "psutil (==7.0.0)",
+    "python-dotenv (==1.0.1)"
+]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "8.3.5"
+black = "25.1.0"
+
+[tool.poetry]
+packages = [{include = "api", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core==2.1.1"]
+build-backend = "poetry.core.masonry.api"

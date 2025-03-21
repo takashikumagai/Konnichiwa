@@ -1,0 +1,25 @@
+# Python-specific
+__pycache__/
+*.py[cod]
+*$py.class
+.coverage
+htmlcov/
+dist/
+build/
+venv/
+env/
+
+# Environment files
+.env
+
+# Logs
+*.log
+
+# IDE and Editor ignores
+.vscode/
+
+# pytest cache
+.pytest_cache/
+
+# OS generated files
+.DS_Store
