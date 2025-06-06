@@ -51,7 +51,7 @@ jobs:
 
     - name: Run API tests
       run: |
-        pytest src/api/ -v
+        poetry run pytest src/api/ -v
 
   deploy:
     needs: test
