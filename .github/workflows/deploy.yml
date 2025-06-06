@@ -49,14 +49,14 @@ jobs:
     #     pip install .
     #     pip install pytest httpx
 
-    # - name: Run API tests
-    #   run: |
-    #     pytest tests/ -v
+    - name: Run API tests
+      run: |
+        pytest src/api/ -v
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/dev'
 
     steps:
     - name: Checkout the Konnichiwa source code
