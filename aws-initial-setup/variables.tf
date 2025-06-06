@@ -51,3 +51,32 @@ variable "app_count" {
   type        = number
   default     = 2
 }
+variable "instance_type" {
+  description = "EC2 instance type for ECS cluster"
+  type        = string
+  default     = "t2.micro"
+}
+
+variable "key_name" {
+  description = "EC2 Key Pair name for SSH access"
+  type        = string
+  default     = null
+}
+
+variable "min_capacity" {
+  description = "Minimum number of EC2 instances"
+  type        = number
+  default     = 1
+}
+
+variable "max_capacity" {
+  description = "Maximum number of EC2 instances"
+  type        = number
+  default     = 1
+}
+
+variable "desired_capacity" {
+  description = "Desired number of EC2 instances"
+  type        = number
+  default     = 1
+}
