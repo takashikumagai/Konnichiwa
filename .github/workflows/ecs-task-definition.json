@@ -2,8 +2,8 @@
   "family": "konnichiwa-task-def",
   "networkMode": "bridge",
   "requiresCompatibilities": ["EC2"],
-  "executionRoleArn": "arn:aws:iam::565106043526:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::565106043526:role/ecsTaskRole",
+  "executionRoleArn": "arn:aws:iam::565106043526:role/konnichiwa-ecs-task-execution-role",
+  "taskRoleArn": "arn:aws:iam::565106043526:role/konnichiwa-ecs-task-role",
   "containerDefinitions": [
     {
       "name": "konnichiwa-container",
