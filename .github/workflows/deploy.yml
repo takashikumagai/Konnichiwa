@@ -9,9 +9,9 @@ on:
 env:
   AWS_REGION: ap-northeast-1
   ECR_REPOSITORY: konnichiwa-repo
-  ECS_SERVICE: kn-service
-  ECS_CLUSTER: kn-cluster
-  ECS_TASK_DEFINITION: kn-task-def
+  ECS_SERVICE: konnichiwa-service
+  ECS_CLUSTER: konnichiwa-cluster
+  ECS_TASK_DEFINITION: konnichiwa-task-def
 
 jobs:
   test:
@@ -89,8 +89,8 @@ jobs:
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: task-definition.json
-        container-name: fastapi-container
+        task-definition: ecs-task-definition.json
+        container-name: konnichiwa-container
         image: ${{ steps.build-image.outputs.image }}
 
     - name: Deploy AWS ECS task definition

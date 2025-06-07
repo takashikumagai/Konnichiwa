@@ -1,0 +1,43 @@
+{
+  "family": "konnichiwa-task-def",
+  "networkMode": "bridge",
+  "requiresCompatibilities": ["EC2"],
+  "executionRoleArn": "arn:aws:iam::565106043526:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::565106043526:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "konnichiwa-container",
+      "image": "565106043526.dkr.ecr.ap-northeast-1.amazonaws.com/konnichiwa-app:latest",
+      "essential": true,
+      "memory": 512,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "hostPort": 0,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/konnichiwa",
+          "awslogs-region": "ap-northeast-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "environment": [
+        {
+          "name": "ENV",
+          "value": "production"
+        }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
