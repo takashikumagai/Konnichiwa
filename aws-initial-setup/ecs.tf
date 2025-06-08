@@ -24,10 +24,65 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   })
 }
 
+resource "aws_iam_role_policy" "ecs_task_execution_secrets_policy" {
+  name   = "${var.project_name}-ecs-task-execution-secrets-policy"
+  role   = aws_iam_role.ecs_task_execution_role.name
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = "secretsmanager:GetSecretValue",
+        Resource = [
+          "arn:aws:secretsmanager:ap-northeast-1:565106043526:secret:konnichiwa/api-key-*"
+        ]
+      }
+    ]
+  })
+}
+
 # Attach the policy required for ECS tasks to run
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# IAM Role for ECS Tasks (Application Role)
+resource "aws_iam_role" "ecs_task_role" {
+  name = "${var.project_name}-ecs-task-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
+      Principal = {
+        Service = "ecs-tasks.amazonaws.com"
+      }
+    }]
+  })
+}
+
+# Attach a policy to the task role
+# use aws_iam_role_policy instead of aws_iam_role_policy_attachment
+# as this policy needs to be customized for the app, e.g. allow access
+# to S3, DynamoDB, etc.
+resource "aws_iam_role_policy" "ecs_task_role_policy" {
+  name   = "${var.project_name}-ecs-task-role-policy"
+  role   = aws_iam_role.ecs_task_role.name
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",  # Allow reading from S3
+          "logs:CreateLogStream",
+          "logs:PutLogEvents" # Allow writing to CloudWatch Logs
+        ],
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 # IAM Role for EC2 instances in ECS cluster
@@ -58,6 +113,7 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
 }
 
 # Security group for ECS EC2 instances
+# Applied to EC2 instances that host containers
 resource "aws_security_group" "ecs_instances" {
   name        = "${var.project_name}-ecs-instances"
   description = "Security group for ECS EC2 instances"
@@ -67,6 +123,8 @@ resource "aws_security_group" "ecs_instances" {
     from_port       = 0
     to_port         = 65535
     protocol        = "tcp"
+    # This restricts the source to only the ALB’s security group, ensuring
+    # that only traffic routed through the ALB can reach the instances.
     security_groups = [aws_security_group.alb.id]
   }
 
@@ -93,7 +151,7 @@ resource "aws_launch_template" "ecs_instance" {
     name = aws_iam_instance_profile.ecs_instance_profile.name
   }
 
-  security_group_ids = [aws_security_group.ecs_instances.id]
+  # security_group_ids = [aws_security_group.ecs_instances.id]
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
@@ -156,9 +214,9 @@ data "aws_ami" "ecs_optimized" {
 resource "aws_ecs_task_definition" "main" {
   family       = "${var.project_name}-task"
   network_mode = "bridge"
-  # Remove requires_compatibilities, cpu, and memory for EC2 launch type
+
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn      = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn      = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
@@ -184,6 +242,46 @@ resource "aws_ecs_task_definition" "main" {
       }
     }
   ])
+}
+
+resource "aws_lb" "main" {
+  name               = "main-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb.id]
+  subnets            = [for subnet in aws_subnet.public : subnet.id]
+
+  enable_deletion_protection = true
+
+  # access_logs {
+  #   bucket  = aws_s3_bucket.lb_logs.id
+  #   prefix  = "main-lb"
+  #   enabled = true
+  # }
+
+  tags = {
+    Environment = "production"
+  }
+}
+resource "aws_lb_target_group" "main" {
+  name     = "tf-example-lb-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  # certificate_arn   = "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4"
+  certificate_arn   = "arn:aws:acm:ap-northeast-1:565106043526:certificate/d8a4dc80-129a-498f-9b0b-662aa78052c2"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
 }
 
 resource "aws_ecs_service" "main" {

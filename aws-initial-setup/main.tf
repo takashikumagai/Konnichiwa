@@ -12,5 +12,5 @@ provider "aws" {
 }
 
 # This data source gets the Availability Zones in the region, which we'll use for our subnets.
-data "aws_availability_zones" "available" {}
+# data "aws_availability_zones" "available" {}
 

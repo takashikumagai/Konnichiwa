@@ -69,6 +69,14 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
+    # Update the secret first
+    - name: Update API Key in Secrets Manager
+      run: |
+        aws secretsmanager update-secret \
+          --secret-id "konnichiwa/api-key" \
+          --secret-string "${{ secrets.API_KEY }}" \
+          --region ${{ env.AWS_REGION }}
+
     - name: Log in to AWS ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2

@@ -31,6 +31,12 @@
           "value": "production"
         }
       ],
+      "secrets": [
+        {
+          "name": "API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-1:565106043526:secret:konnichiwa/api-key"
+        }
+      ],
       "healthCheck": {
         "command": ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"],
         "interval": 30,

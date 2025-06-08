@@ -11,7 +11,7 @@ variable "project_name" {
 }
 
 variable "vpc_cidr" {
-  description = "CIDR block for the VPC."
+  description = "CIDR block for VPC"
   type        = string
   default     = "10.0.0.0/16"
 }
@@ -79,4 +79,10 @@ variable "desired_capacity" {
   description = "Desired number of EC2 instances"
   type        = number
   default     = 1
+}
+
+variable "az_count" {
+  description = "Number of availability zones"
+  type        = number
+  default     = 2
 }
