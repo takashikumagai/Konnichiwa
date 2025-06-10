@@ -290,6 +290,10 @@ resource "aws_ecs_service" "main" {
     container_port   = var.container_port
   }
 
+  placement_constraints {
+    type = "distinctInstance"
+  }
+
   # Ensure service waits for ALB and ASG to be ready
   depends_on = [
     aws_lb_listener.http,
