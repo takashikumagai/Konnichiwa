@@ -34,7 +34,7 @@ resource "aws_iam_role_policy" "ecs_task_execution_secrets_policy" {
         Effect   = "Allow",
         Action   = "secretsmanager:GetSecretValue",
         Resource = [
-          "arn:aws:secretsmanager:ap-northeast-1:565106043526:secret:konnichiwa/api-key-*"
+          "arn:aws:secretsmanager:ap-northeast-1:565106043526:secret:konnichiwa/konnichiwa-api-key-*"
         ]
       }
     ]
