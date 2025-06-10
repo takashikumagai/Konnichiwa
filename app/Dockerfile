@@ -25,6 +25,8 @@ RUN addgroup --gid 1001 -S $SERVICE_NAME && \
 
 ### Install konnichiwa
 
+# pip install requires README.md later so we need to copy it to the image
+
 WORKDIR /app
 
 COPY src /app/src
