@@ -46,4 +46,4 @@ RUN pip install --user --no-cache-dir --disable-pip-version-check /app
 WORKDIR /app/src/api
 
 # Run uvicorn as $SERVICE_NAME
-CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:80", "-w", "9"]
+CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:80", "-w", "2"]
