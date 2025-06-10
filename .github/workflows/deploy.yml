@@ -2,9 +2,9 @@ name: Deploy Konnichiwa application to AWS (ECS + ECR)
 
 on:
   push:
-    branches: [ assignment ]
+    branches: [ main ]
   pull_request:
-    branches: [ assignment ]
+    branches: [ main ]
 
 env:
   AWS_REGION: ap-northeast-1
@@ -52,7 +52,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/assignment'
+    if: github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout the Konnichiwa source code
