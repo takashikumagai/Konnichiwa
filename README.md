@@ -41,7 +41,7 @@ docker build --rm -t konnichiwa .
 Run the application on a container locally
 
 ```
-docker run -p 4000:80 --env-file ../.env -t konnichiwa
+docker run --rm -p 4000:80 --env-file ../.env -t konnichiwa
 ```
 
 Notes:
@@ -137,6 +137,7 @@ How to run monitoring script locally
 
 Install dependencies (required only once)
 ```
+cd monitor
 uv sync
 ```
 

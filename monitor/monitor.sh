@@ -3,7 +3,7 @@
 set -euo pipefail
 
 set -a
-source .env
+source ../.env
 set +a
 
 # check if API_KEY is defined
@@ -22,17 +22,12 @@ inspect_url="http://${hostname}:${port}/inspect"
 
 response=$(curl -s -H "Authorization: Bearer ${api_key}" ${inspect_url})
 
-# used CPU percentage
+# Get used CPU and memory percentages from the response
 cpu=$(echo "${response}" | jq .system.cpu_used_percent)
-
-# used memory percentage 
-cpu=$(echo "${response}" | jq .system.memory_used_percent)
+mem=$(echo "${response}" | jq .system.memory_used_percent)
 
 if [ "$cpu" -gt 70 ] || [ "$mem" -gt 70 ]; then
     echo "Warning: running low on resource"
 else
     echo "Resource use is healthy"
 fi
-
-
-echo "$cpu $mem"
