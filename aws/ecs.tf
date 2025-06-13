@@ -106,6 +106,12 @@ resource "aws_iam_role_policy_attachment" "ecs_instance_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
 
+# SSH access to the EC2 instances
+resource "aws_iam_role_policy_attachment" "ecs_instance_connect" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/EC2InstanceConnect"
+}
+
 # Instance profile for EC2 instances
 resource "aws_iam_instance_profile" "ecs_instance_profile" {
   name = "${var.project_name}-ecs-instance-profile"
@@ -126,6 +132,13 @@ resource "aws_security_group" "ecs_instances" {
     # This restricts the source to only the ALB’s security group, ensuring
     # that only traffic routed through the ALB can reach the instances.
     security_groups = [aws_security_group.alb.id]
+  }
+
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = var.ssh_allowed_cidr_blocks
   }
 
   egress {
@@ -151,7 +164,8 @@ resource "aws_launch_template" "ecs_instance" {
     name = aws_iam_instance_profile.ecs_instance_profile.name
   }
 
-  # security_group_ids = [aws_security_group.ecs_instances.id]
+  # security_group_names = [ aws_security_group.ecs_instances.name ]
+  vpc_security_group_ids = [aws_security_group.ecs_instances.id]
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
@@ -172,7 +186,8 @@ resource "aws_autoscaling_group" "ecs_cluster" {
   name                = "${var.project_name}-ecs-asg"
   vpc_zone_identifier = [for subnet in aws_subnet.public : subnet.id]
   target_group_arns   = [aws_lb_target_group.main.arn]
-  health_check_type   = "ELB"
+  health_check_type   = "EC2"
+  health_check_grace_period = 300  # Give ECS time to start tasks before health check kicks in
   min_size            = var.min_capacity
   max_size            = var.max_capacity
   desired_capacity    = var.desired_capacity
@@ -310,4 +325,12 @@ resource "aws_ecs_service" "main" {
     aws_lb_listener.http,
     aws_autoscaling_group.ecs_cluster
   ]
+}
+
+output "ecs_launch_template_name" {
+  value = aws_launch_template.ecs_instance.name
+}
+
+output "ecs_launch_template_id" {
+  value = aws_launch_template.ecs_instance.id
 }

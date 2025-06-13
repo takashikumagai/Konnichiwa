@@ -86,3 +86,9 @@ variable "az_count" {
   type        = number
   default     = 2
 }
+
+variable "ssh_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to SSH to ECS instances"
+  type        = list(string)
+  default     = []  # Default to none
+}
