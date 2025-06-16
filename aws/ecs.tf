@@ -34,7 +34,7 @@ resource "aws_iam_role_policy" "ecs_task_execution_secrets_policy" {
         Effect   = "Allow",
         Action   = "secretsmanager:GetSecretValue",
         Resource = [
-          "arn:aws:secretsmanager:ap-northeast-1:565106043526:secret:konnichiwa/konnichiwa-api-key-*"
+          "aws_secretsmanager_secret.api_key.arn"
         ]
       }
     ]
@@ -266,13 +266,15 @@ resource "aws_lb" "main" {
   security_groups    = [aws_security_group.alb.id]
   subnets            = [for subnet in aws_subnet.public : subnet.id]
 
-  enable_deletion_protection = true
-
   tags = {
     Environment = "production"
   }
 }
+
 resource "aws_lb_target_group" "main" {
+  # The ALB decrypts HTTPS traffic (port 443) using the certificate and forwards
+  # unencrypted HTTP traffic (port 80) to this target group (your ECS containers),
+  # which is why the protocol is set to HTTP on port 80
   name     = "tf-example-lb-tg"
   port     = 80
   protocol = "HTTP"
@@ -291,6 +293,9 @@ resource "aws_lb_target_group" "main" {
 }
 
 resource "aws_lb_listener" "http" {
+  # Note that when the protocol is set to HTTPS, the ALB must terminate SSL/TLS connections,
+  # which requires a certificate to decrypt client requests (e.g., from browsers accessing
+  # your domain).
   load_balancer_arn = aws_lb.main.arn
   port              = "443"
   protocol          = "HTTPS"

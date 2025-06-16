@@ -8,8 +8,3 @@ resource "aws_secretsmanager_secret" "api_key" {
     Service     = "konnichiwa"
   }
 }
-
-# Output the ARN for use in ECS task definition
-output "api_key_secret_arn" {
-  value = aws_secretsmanager_secret.api_key.arn
-}
