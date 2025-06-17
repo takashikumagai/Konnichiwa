@@ -2,6 +2,35 @@
 
 set -euo pipefail
 
+
+# Called on any script exit.
+cleanup() {
+    # The exit_code of the script is passed as an argument to the trap
+    local exit_code=$?
+    # Add cleanup logic here, e.g. deleting temp files.
+    # echo "Script exiting."
+    # Preserve the original exit code
+    exit $exit_code
+}
+
+
+# Called on any command failure.
+handle_error() {
+    local exit_code=$?
+    local line_number=$1
+    echo "Error: command failed on line ${line_number} with exit code ${exit_code}." >&2
+}
+
+# --- Traps ---
+# 1. Register the 'handle_error' function to run on the ERR signal.
+#    The '$LINENO' variable contains the line number where the error occurred.
+trap 'handle_error $LINENO' ERR
+
+# 2. Register the 'cleanup' function to run on the EXIT signal.
+#    This ensures cleanup happens regardless of how the script terminates.
+trap cleanup EXIT
+
+
 set -a
 source ../.env
 set +a
@@ -20,7 +49,8 @@ port="${KONNICHIWA_PORT:-4000}"
 inspect_url="http://${hostname}:${port}/inspect"
 
 
-response=$(curl -s -H "Authorization: Bearer ${api_key}" ${inspect_url})
+# --fail: exit if the HTTP status is an error (>=400)
+response=$(curl --fail -s -H "Authorization: Bearer ${api_key}" ${inspect_url})
 
 # Get used CPU and memory percentages from the response
 cpu=$(echo "${response}" | jq .system.cpu_used_percent)
